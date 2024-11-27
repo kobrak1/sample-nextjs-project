@@ -10,7 +10,10 @@ interface RootLayoutTypes {
 export default function RootLayout({ children }: RootLayoutTypes) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body className={`${inter.className} antialiased`}>
+        <SpeedInsights />
+        {children}
+      </body>
     </html>
   );
 }
