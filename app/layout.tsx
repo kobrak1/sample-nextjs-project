@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import '@/app/ui/global.css';
 import { inter } from './ui/fonts';
 
