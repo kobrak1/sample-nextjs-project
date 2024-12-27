@@ -13,6 +13,8 @@ const FormSchema = z.object({
     date: z.string(),
 });
 
+
+// Action to create an invoice
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData: FormData) {
@@ -24,11 +26,53 @@ export async function createInvoice(formData: FormData) {
     const amountInCents = amount * 100;
     const date = new Date().toISOString().split('T')[0];
 
-    await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
+    try {
+        await sql`
+        INSERT INTO invoices (customer_id, amount, status, date)
+        VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+        `;
+    } catch(error) {
+        return { message: 'Failed to create an invoice' }
+    }
 
     revalidatePath('/dashboard/invoices')
     redirect('/dashboard/invoices')
+}
+
+
+// Action to update a specific invoice
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+
+export async function updateInvoice(id: string, formData: FormData) {
+    const { customerId, amount, status } = UpdateInvoice.parse({
+        customerId: formData.get('customerId'),
+        amount: formData.get('amount'),
+        status: formData.get('status'),
+    });
+
+    const amountInCents = amount * 100;
+
+    try {
+        await sql`
+            UPDATE invoices
+            SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+            WHERE id = ${id}
+          `;
+    } catch (error) {
+        return { message: 'Failed to update invoice' }
+    }
+
+    revalidatePath('/dashboard/invoices');
+    redirect('/dashboard/invoices');
+}
+
+// Action to delete a specific invoice
+export async function deleteInvoice(id: string) {
+    try {
+        await sql`DELETE FROM invoices WHERE id = ${id}`;
+        revalidatePath('/dashboard/invoices');
+        return { message: 'Deleted invoice' }
+    } catch (error) {
+        return { message: 'Failed to delete invoice' };
+    }
 }
